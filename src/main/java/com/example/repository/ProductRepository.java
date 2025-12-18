@@ -1,0 +1,12 @@
+package com.example.repository;
+
+import com.example.domain.Product;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import java.util.Optional;
+
+public interface ProductRepository extends JpaRepository<Product, Long> {
+    Optional<Product> findByTinyId(String tinyId);
+
+    Optional<Product> findByCodigo(String codigo);
+}

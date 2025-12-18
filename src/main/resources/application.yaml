@@ -1,0 +1,22 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/baronesa_tiny
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+    ddl-auto: update
+    open-in-view: false
+
+logging:
+  level:
+    org.springframework.web.reactive.function.client: DEBUG
+
+tiny:
+  api:
+    base-url: https://api.tiny.com.br/api2
+    token: 66c8f62884755f4eafcd0a3b39286e1b7edd75e3f070d97c431748b3231267aa
+    rate-limit:
+      requests-per-second: 5
+    page-size: 100
