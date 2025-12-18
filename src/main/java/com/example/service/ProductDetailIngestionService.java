@@ -28,7 +28,6 @@ public class ProductDetailIngestionService {
             try {
                 this.enrich(product);
 
-                // ⏱️ Delay seguro para Tiny
                 Thread.sleep(800);
 
             } catch (TinyRateLimitException e) {

@@ -21,8 +21,6 @@ public class OrderItem {
     @JoinColumn(name = "order_id")
     private Order order;
 
-//    @Column(name = "product_codigo", length = 50)
-//    private String productCodigo;
     @ManyToOne(optional = false)
     @JoinColumn(name = "product_codigo", referencedColumnName = "codigo")
     private Product product;

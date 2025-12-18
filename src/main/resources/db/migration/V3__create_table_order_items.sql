@@ -23,5 +23,3 @@ CREATE INDEX idx_order_items_order_id
     ON order_items(order_id);
 CREATE INDEX idx_order_items_product_codigo
     ON order_items(product_codigo);
-CREATE UNIQUE INDEX uq_order_items_order_product
-    ON order_items(order_id, product_codigo);

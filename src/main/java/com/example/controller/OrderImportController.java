@@ -1,6 +1,5 @@
 package com.example.controller;
 
-import com.example.dto.TinyProperties;
 import com.example.service.OrderImportService;
 import com.example.service.OrderSyncService;
 import lombok.RequiredArgsConstructor;
@@ -16,7 +15,6 @@ public class OrderImportController {
 
     private final OrderImportService service;
     private final OrderSyncService orderSyncService;
-    private final TinyProperties tinyProperties;
 
     /**
      * Exemplo:
@@ -47,9 +45,17 @@ public class OrderImportController {
     @PostMapping("/sync/{tinyId}")
     public ResponseEntity<Void> syncOrder(@PathVariable String tinyId) {
 
-        orderSyncService.syncPedido(tinyId, tinyProperties.getToken());
+        orderSyncService.enrich(tinyId);
 
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/details")
+    public ResponseEntity<Void> enrich() {
+
+        orderSyncService.enrichPedidos();
+
+        return ResponseEntity.accepted().build();
     }
 }
 

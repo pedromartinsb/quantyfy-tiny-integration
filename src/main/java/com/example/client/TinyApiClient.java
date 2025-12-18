@@ -58,7 +58,6 @@ public class TinyApiClient {
                         .with("id", String.valueOf(productId))
                         .with("formato", "JSON"))
                 .retrieve()
-                // 🔥 Sempre capturar erro HTTP primeiro
                 .onStatus(HttpStatusCode::isError, response ->
                         response.bodyToMono(String.class)
                                 .flatMap(body -> Mono.error(
@@ -67,7 +66,6 @@ public class TinyApiClient {
                                         )
                                 ))
                 )
-                // 🧠 Ler SEMPRE como String
                 .bodyToMono(String.class)
                 .flatMap(this::parseTinyResponse);
     }
@@ -80,14 +78,12 @@ public class TinyApiClient {
 
             TinyProductDetailResponse.Retorno retorno = response.getRetorno();
 
-            // ⛔ Rate limit Tiny
             if (retorno.getCodigo_erro() != null && retorno.getCodigo_erro() == 6) {
                 return Mono.error(new TinyRateLimitException(
                         "Tiny rate limit: " + body
                 ));
             }
 
-            // ❌ Erros funcionais Tiny
             if (!"OK".equalsIgnoreCase(retorno.getStatus())) {
                 return Mono.error(new TinyApiException(
                         "Erro funcional Tiny: " + body
@@ -102,84 +98,4 @@ public class TinyApiClient {
             ));
         }
     }
-
-
-//    @RateLimiter(name = "tinyApi")
-//    @Retry(name = "tinyApi")
-//    public Mono<TinyProductDetailResponse> getProductDetail(String productId) {
-//
-//        return webClient.post()
-//                .uri("/produto.obter.php")
-//                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-//                .accept(MediaType.APPLICATION_JSON)
-//                .body(BodyInserters.fromFormData("token", props.getToken())
-//                        .with("id", productId)
-//                        .with("formato", "JSON"))
-//                .exchangeToMono(response ->
-//                        response.bodyToMono(String.class)
-//                                .flatMap(raw -> {
-//
-//                                    String body = raw.trim();
-//
-//                                    // 🔥 CASO 1 — HTML REAL (erro Tiny / proxy / bloqueio)
-//                                    if (body.startsWith("<")) {
-//                                        return Mono.error(
-//                                                new TinyApiException(
-//                                                        "Resposta HTML da Tiny: " + body
-//                                                )
-//                                        );
-//                                    }
-//
-//                                    // 🔥 CASO 2 — NÃO é JSON válido
-//                                    if (!body.startsWith("{")) {
-//                                        return Mono.error(
-//                                                new TinyApiException(
-//                                                        "Resposta desconhecida da Tiny: " + body
-//                                                )
-//                                        );
-//                                    }
-//
-//                                    try {
-//                                        ObjectMapper mapper = new ObjectMapper();
-//
-//                                        // 1️⃣ Parse base (status, erro, codigo)
-//                                        TinyBaseResponse base =
-//                                                mapper.readValue(body, TinyBaseResponse.class);
-//
-//                                        // 2️⃣ Erro de negócio da Tiny
-//                                        if (!"OK".equalsIgnoreCase(
-//                                                base.getRetorno().getStatus())) {
-//
-//                                            String mensagemErro =
-//                                                    base.getRetorno().getErros() != null
-//                                                            ? base.getRetorno().getErros().stream()
-//                                                            .map(TinyBaseResponse.Erro::getErro)
-//                                                            .collect(Collectors.joining(" | "))
-//                                                            : "Erro desconhecido da Tiny";
-//
-//                                            return Mono.error(
-//                                                    new TinyApiException(
-//                                                            "Erro Tiny (codigo "
-//                                                                    + base.getRetorno().getCodigo_erro()
-//                                                                    + "): " + mensagemErro
-//                                                    )
-//                                            );
-//                                        }
-//
-//                                        // 3️⃣ Sucesso → parse final
-//                                        TinyProductDetailResponse success =
-//                                                mapper.readValue(body, TinyProductDetailResponse.class);
-//
-//                                        return Mono.just(success);
-//
-//                                    } catch (Exception e) {
-//                                        return Mono.error(
-//                                                new TinyApiException(
-//                                                        "Erro ao parsear JSON da Tiny", e
-//                                                )
-//                                        );
-//                                    }
-//                                })
-//                );
-//    }
 }

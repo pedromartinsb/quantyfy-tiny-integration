@@ -43,7 +43,6 @@ public class OrderImportService {
 
             page++;
 
-            // 🛑 proteção contra rate limit
             sleep(400);
 
         } while (page <= totalPages);

@@ -9,8 +9,6 @@ import java.util.Optional;
 
 public interface OrderRepository extends JpaRepository<Order, Long> {
 
-    Optional<Order> findByTinyId(String tinyId);
-
     boolean existsByTinyId(String tinyId);
 
     @Query("""

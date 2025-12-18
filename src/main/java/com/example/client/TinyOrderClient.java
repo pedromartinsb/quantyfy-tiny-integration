@@ -68,37 +68,28 @@ public class TinyOrderClient {
                         .queryParam("formato", "json")
                         .build()
                 )
-                .exchangeToMono(response -> {
+                .exchangeToMono(response -> response.bodyToMono(String.class)
+                        .flatMap(body -> {
 
-                    MediaType contentType = response.headers()
-                            .contentType()
-                            .orElse(MediaType.TEXT_HTML);
+                            if (!body.trim().startsWith("{")) {
+                                return Mono.error(new TinyApiException(
+                                        "Resposta não JSON da Tiny: " + body
+                                ));
+                            }
 
-                    return response.bodyToMono(String.class)
-                            .flatMap(body -> {
+                            try {
+                                ObjectMapper mapper = new ObjectMapper();
+                                TinyPedidoDetalheResponse parsed =
+                                        mapper.readValue(body, TinyPedidoDetalheResponse.class);
+                                return Mono.just(parsed);
 
-                                // 🔴 Tiny pode devolver HTML ou JSON com erro
-                                if (!body.trim().startsWith("{")) {
-                                    return Mono.error(new TinyApiException(
-                                            "Resposta não JSON da Tiny: " + body
-                                    ));
-                                }
-
-                                try {
-                                    ObjectMapper mapper = new ObjectMapper();
-                                    TinyPedidoDetalheResponse parsed =
-                                            mapper.readValue(body, TinyPedidoDetalheResponse.class);
-                                    return Mono.just(parsed);
-
-                                } catch (Exception e) {
-                                    return Mono.error(new TinyApiException(
-                                            "Erro ao parsear resposta Tiny: " + body, e
-                                    ));
-                                }
-                            });
-                })
+                            } catch (Exception e) {
+                                return Mono.error(new TinyApiException(
+                                        "Erro ao parsear resposta Tiny: " + body, e
+                                ));
+                            }
+                        }))
                 .block();
     }
 
 }
-
