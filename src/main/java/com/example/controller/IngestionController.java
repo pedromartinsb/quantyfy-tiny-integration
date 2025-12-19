@@ -23,8 +23,14 @@ public class IngestionController {
     }
 
     @PostMapping("/details")
-    public ResponseEntity<Void> enrich() {
-        detailService.enrichProducts();
+    public ResponseEntity<Void> enrichDetails() {
+        detailService.enrichProductsDetails();
+        return ResponseEntity.accepted().build();
+    }
+
+    @PostMapping("/stocks")
+    public ResponseEntity<Void> enrichStocks() {
+        detailService.enrichProductsStocks();
         return ResponseEntity.accepted().build();
     }
 }

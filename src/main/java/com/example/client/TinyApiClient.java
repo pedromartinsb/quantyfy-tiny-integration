@@ -2,6 +2,7 @@ package com.example.client;
 
 import com.example.dto.TinyProductDetailResponse;
 import com.example.dto.TinyProductResponse;
+import com.example.dto.TinyProductStockResponse;
 import com.example.dto.TinyProperties;
 import com.example.exception.TinyApiException;
 import com.example.exception.TinyRateLimitException;
@@ -24,6 +25,9 @@ import tools.jackson.databind.ObjectMapper;
 @RequiredArgsConstructor
 public class TinyApiClient {
 
+    private static final String TOKEN_PARAM = "token";
+    private static final String FORMATO_PARAM = "formato";
+
     private final WebClient webClient;
     private final TinyProperties props;
     private final ObjectMapper objectMapper;
@@ -33,8 +37,8 @@ public class TinyApiClient {
     public Mono<TinyProductResponse> searchProducts(int page) {
 
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-        formData.add("token", props.getToken());
-        formData.add("formato", "JSON");
+        formData.add(TOKEN_PARAM, props.getToken());
+        formData.add(FORMATO_PARAM, "JSON");
         formData.add("pagina", String.valueOf(page));
 
         return webClient.post()
@@ -54,9 +58,9 @@ public class TinyApiClient {
                 .uri("/produto.obter.php")
                 .contentType(MediaType.APPLICATION_FORM_URLENCODED)
                 .accept(MediaType.APPLICATION_JSON)
-                .body(BodyInserters.fromFormData("token", props.getToken())
+                .body(BodyInserters.fromFormData(TOKEN_PARAM, props.getToken())
                         .with("id", String.valueOf(productId))
-                        .with("formato", "JSON"))
+                        .with(FORMATO_PARAM, "JSON"))
                 .retrieve()
                 .onStatus(HttpStatusCode::isError, response ->
                         response.bodyToMono(String.class)
@@ -68,6 +72,34 @@ public class TinyApiClient {
                 )
                 .bodyToMono(String.class)
                 .flatMap(this::parseTinyResponse);
+    }
+
+    public Mono<TinyProductStockResponse> getProductStock(String productId) {
+        return webClient.post()
+                .uri(uriBuilder -> uriBuilder
+                        .path("/produto.obter.estoque.php")
+                        .queryParam(TOKEN_PARAM, props.getToken())
+                        .queryParam("id", productId)
+                        .queryParam(FORMATO_PARAM, "json")
+                        .build()
+                )
+                .exchangeToMono(response ->
+                        response.bodyToMono(String.class)
+                                .flatMap(body -> {
+                                    try {
+                                        ObjectMapper mapper = new ObjectMapper();
+                                        return Mono.just(
+                                                mapper.readValue(body, TinyProductStockResponse.class)
+                                        );
+                                    } catch (Exception e) {
+                                        return Mono.error(
+                                                new TinyApiException(
+                                                        "Erro ao parsear estoque Tiny: " + body, e
+                                                )
+                                        );
+                                    }
+                                })
+                );
     }
 
     private Mono<TinyProductDetailResponse> parseTinyResponse(String body) {

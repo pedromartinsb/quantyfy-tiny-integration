@@ -49,10 +49,11 @@ public class Product {
     @Column(name = "preco_custo_medio")
     private BigDecimal precoCustoMedio;
 
-    private Integer stock;
+    @Column(name = "estoque")
+    private Integer estoque;
 
-    @Column(name = "stock_reserved")
-    private Integer stockReserved;
+    @Column(name = "estoque_reservado")
+    private Integer estoqueReservado;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt;
