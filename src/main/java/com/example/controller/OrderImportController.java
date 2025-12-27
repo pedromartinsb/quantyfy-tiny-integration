@@ -38,9 +38,7 @@ public class OrderImportController {
 
     /**
      * Sincroniza um pedido específico da Tiny pelo ID
-     *
-     * Ex:
-     * POST /orders/sync/906280267
+     * Ex: POST /orders/sync/906280267
      */
     @PostMapping("/sync/{tinyId}")
     public ResponseEntity<Void> syncOrder(@PathVariable String tinyId) {
@@ -51,9 +49,10 @@ public class OrderImportController {
     }
 
     @PostMapping("/details")
-    public ResponseEntity<Void> enrich() {
+    public ResponseEntity<Void> enrich(@RequestParam(required = false) String dataInicial,
+                                       @RequestParam(required = false) String dataFinal) {
 
-        orderSyncService.enrichPedidos();
+        orderSyncService.enrichPedidos(dataInicial, dataFinal);
 
         return ResponseEntity.accepted().build();
     }

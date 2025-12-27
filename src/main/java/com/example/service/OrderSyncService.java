@@ -30,9 +30,14 @@ public class OrderSyncService {
     private final TinyOrderClient tinyOrderClient;
     private final TinyProperties tinyProperties;
 
-    public void enrichPedidos() {
+    public void enrichPedidos(String dataInicial, String dataFinal) {
 
-        List<Order> orders = orderRepository.findAll();
+//        List<Order> orders = orderRepository.findAll();
+//        List<Order> orders = orderRepository.findAllByDataEntregaIsNull();
+        DateTimeFormatter customFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        LocalDate dataInicialFormatter = LocalDate.parse(dataInicial, customFormatter);
+        LocalDate dataFinalFormatter = LocalDate.parse(dataFinal, customFormatter);
+        List<Order> orders = orderRepository.findByDataPedidoBetween(dataInicialFormatter, dataFinalFormatter);
 
         for (Order order : orders) {
             try {
